@@ -6,11 +6,46 @@
     <script src="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.js"></script>
   </head>
   <body class="mixpanel-platform-body">
-    <h1>Hello, World!</h1>
     <script>
-      MP.api.ready(function() {
-        // Run queries and display results here
-      });
+MP.api.ready(function() {
+    var purchaseUpgrade = MP.api.segment('Purchase Upgrade', 'OS', {
+        from: moment().subtract(1, 'months'),
+        unit: 'week'
+    });
+    var signup = MP.api.segment('Signup', 'OS', {
+        from: moment().subtract(1, 'months'),
+        unit: 'week'
+    });
+
+    $.when(purchaseUpgrade, signup).done(function(searched, signup) {
+        signup = signup.values();
+
+        _.each(searched.values(), function(value, city) {
+            if (!signup[city]) {
+                return;
+            }
+
+            $('<span>' + city + '</span>').css({
+                'background': 'white',
+                'border': '1px solid #7a8195',
+                'border-radius': '5px',
+                'color': '#7a8195',
+                'display': 'inline-block',
+                'margin-bottom': '20px',
+                'margin-top': '10px',
+                'padding': '10px'
+            }).appendTo('body');
+
+            $('<div></div>').appendTo('body').MPChart({
+                chartType: 'line',
+                data: {
+                    'Level Completed': value,
+                    'Purchase Upgrade': signup[city]
+                }
+            });
+        });
+    });
+});
     </script>
   </body>
 </html>
